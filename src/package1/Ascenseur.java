@@ -5,9 +5,11 @@ import java.util.Queue;
 
 public class Ascenseur
 {
-	//l'étage courrant de l'ascenseur
+	//l'étage courrant de l'ascenseur 
+	// we could simply use an int 
 	private Floor CurrentF;
 	//la file des étages selectionner
+	// we could simply use an int 
 	private Queue<Floor> DestinationF;
 	//la capacité maximale de l'ascenseur
 	private final static int max_capacity = 4;
@@ -19,11 +21,17 @@ public class Ascenseur
 	private double x,y;
 	//l'état de l'ascenseur (en mouvement, en arret )
 	private boolean state;
+	// we need two val boolean one is closed and one is opened
 
 	public Ascenseur() 
 	{
 		
 	}
+	//constructor
+	//draw 
+	//function to know the stat (up down  open close wait)
+	//function for people on board
+	//function to add people 
 
 	public Floor getCurrentF()
 	{
