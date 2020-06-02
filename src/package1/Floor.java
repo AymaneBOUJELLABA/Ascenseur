@@ -21,54 +21,19 @@ public class Floor
 	{
 		this.Ay=Ay;
 		this.number=number;
+		Peoples = new ArrayList<People>();
 	}
-	public Floor() 
+	public Floor()
 	{
-		
+		Peoples = new ArrayList<People>();
 	}
 	
-	public void drawSpace(Graphics g) 
-	{
-		Graphics2D g2 = (Graphics2D) g ;
-		g2.setStroke(new BasicStroke(3));
-		
-
-		Graphics2D g3 = (Graphics2D) g ;
-		g3.setColor(new Color(0,66,112));
-		for(int i = 0 ; i<500;i+=100) {
-			g3.fillRect(320, i, 100, 100);
-		}
-		//400 300 200 100
-	}
-	public void drawFloor(Graphics g) 
-	{
-		Graphics2D g2 = (Graphics2D) g ;
-		g2.setColor(new Color(0,66,112)); // white smock 245,245,245 
-		
-		for(int i=0,j=5;i<500 && j>0 ; i+=100,j--)
-		{
-			this.Ay =i;
-			this.number = j;
-			if(Ay<300)
-			{
-				g.drawLine(150,Ay,588,Ay);
-				g.drawString(" Etage = "+number , 50, i+30);
-			}
-			else
-			{
-				g.drawLine(50,Ay,693,Ay);
-				g.drawString(" Etage = "+number , 50, i+30);
-			}
-			
-		}
-		
-//		g.drawLine();
-		
-	}
+	//removed draw to simulation
 	public int getNumber() 
 	{
 		return this.number;
 	}
+	
 	public void getNumberFromY(int Ay) 
 	{
 		switch (Ay) 
@@ -91,14 +56,43 @@ public class Floor
 		default:
 			break;
 		}
-		
 	}
-	
+	public void addPerson(People p)
+	{
+		Peoples.add(p);
+	}
+	public ArrayList<People> getPeoples()
+	{
+		return Peoples;
+	}
+	public void setPeoples(ArrayList<People> peoples)
+	{
+		Peoples = peoples;
+	}
+	public int getAy()
+	{
+		return Ay;
+	}
+	public void setAy(int ay)
+	{
+		Ay = ay;
+	}
+	public void setNumber(int number)
+	{
+		this.number = number;
+	}
 	public void goTo(int number) 
 	{
 		// a switch  to go the floor  
 		
 	}
+	@Override
+	public String toString()
+	{
+		return "Floor [number=" + number + ", Ay=" + Ay + "]";
+	}
+	
+	
 	//constractor
 	//add people to the floor
 	//draw the lines

@@ -3,9 +3,19 @@ package package1;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
+import java.awt.GridLayout;
+import javafx.*;
 
-public class Window {
+public class Window
+{
 
+	/*COLORS TO USE : 
+	*background : 10,125,165;
+	*floo : 102 189 227;
+	*elevator color : 8,76,121;
+	*some white : 237,245,247;
+
+	*/
 	private JFrame frame;
 
 	/**
@@ -39,10 +49,12 @@ public class Window {
 	/**
 	 * Initialize the contents of the frame.
 	 */
-	private void initialize() {
+	private void initialize()
+	{
 		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 300);
+		frame.setBounds(100, 100, 903, 689);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(new GridLayout(4,1));
 	}
 
 }
