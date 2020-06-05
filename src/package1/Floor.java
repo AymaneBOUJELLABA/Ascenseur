@@ -28,6 +28,45 @@ public class Floor
 		Peoples = new ArrayList<People>();
 	}
 	
+	// to draw all floors
+	public static ArrayList<Floor> genFloors()
+	{
+		ArrayList<Floor> Floors = new ArrayList<Floor>();
+		for(int i=0,j=5;i<500 && j>0 ; i+=100,j--)
+		{
+			Floor newF= new Floor();
+			newF.setAy(i);
+			newF.setNumber(j);
+			Floors.add(newF);
+		}
+		return Floors;
+	}
+	public static void drawFloors(Graphics g) 
+	{
+		
+		//draw floor lines
+		Graphics2D g2 = (Graphics2D) g ;
+		g2.setColor(new Color(0,66,112)); // white smock 245,245,245 
+		g2.setStroke(new BasicStroke(3));
+		//drawlines for each floor
+		for(int i=0,j=5;i<500 && j>0 ; i+=100,j--)
+		{
+			Floor newF= new Floor();
+			newF.setAy(i);
+			newF.setNumber(j);
+			if(newF.getAy()<300)
+			{
+				g.drawLine(150,newF.getAy(),588,newF.getAy());
+				g.drawString(" Etage : "+newF.getNumber(), 50, i+30);
+			}
+			else
+			{
+				g.drawLine(50,newF.getAy(),693,newF.getAy());
+				g.drawString(" Etage : "+newF.getNumber() , 50, i+30);
+			}	
+		}
+	}
+	
 	//removed draw to simulation
 	public int getNumber() 
 	{

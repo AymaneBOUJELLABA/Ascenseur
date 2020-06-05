@@ -7,6 +7,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
@@ -54,8 +55,6 @@ public class People
 			g.drawImage(img, Ax+50, Ay,60,50, null);
 			
 			g.drawString(" DestFloor : " + DestinationF.getNumber(),Ax, Ay+10);
-			
-			System.out.println("DestF : " +DestinationF.getNumber());
 		} catch (IOException e)
         {
 			e.printStackTrace();
@@ -73,13 +72,51 @@ public class People
 			g.drawImage(img, Ax, Ay,60,50, null);
 			g.drawString(" DestFloor : " + DestinationF.getNumber(),Ax, Ay+10);
 			
-			System.out.println("DestF : " +DestinationF.getNumber());
         } catch (IOException e)
         {
 			e.printStackTrace();
 		}
 
 		
+	}
+	//genérer un nombre spécifique de personnes
+	public static ArrayList<People> genPeoples(ArrayList<Floor> Floors,int n)
+	{
+		ArrayList<People> peoples = new ArrayList<People>();
+		for(int i=0; i<n;i++)
+		{
+			//random number generation from 0 to (n-1)
+			int min=0, max=n-1;
+			//Destination floor random number
+			int DFn = (int)(Math.random() * (max - min + 1) + min);
+			//la nouvelle personne
+			People p;
+			//selectionner l'étage
+			int Fn=i;
+			if(i<3)
+			{
+				//creer la personne et affecter l'étage sélectionner
+				p = new People(90,Floors.get(Fn).getAy()+48,Floors.get(Fn));
+				//affecter une destination au hasard
+				p.setDestinationF(Floors.get(DFn));
+			}else
+			{
+				//same thing but for the bottom floors
+				p = new People(40,Floors.get(Fn).getAy()+48,Floors.get(Fn));
+				p.setDestinationF(Floors.get(DFn));
+			}
+			Floors.get(Fn).addPerson(p);
+			peoples.add(p);
+		}
+		
+		return peoples;
+	}
+	public static void drawPeople(ArrayList<People> ps,Graphics g)
+	{
+		for(People p: ps)
+		{
+			p.drawPerson(g);
+		}
 	}
 	
 	public static Image getIcon()

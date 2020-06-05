@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
-import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -15,92 +14,153 @@ import javax.swing.UIManager;
 
 public class Simulation extends JPanel
 {
+	private int Elspeed = 5;
+	private int pSpeed = 1;
+	private Graphics g;
 	private Floor sp = new Floor(); //where the elevator will go up and down
 	private ArrayList<Floor> Floors;
 	private ArrayList<People> Peoples;
-	private Ascenseur a1 = new Ascenseur();
-	
-	public Simulation()
+	private Ascenseur a;
+	//add booleans
+	boolean arrive = false;
+	public Simulation(int n)
 	{
-		 Peoples = new ArrayList<People>();
-		 Floors = new ArrayList<Floor>();
+		Floors = Floor.genFloors();
+		Peoples = People.genPeoples(Floors, n);
+		a = new Ascenseur(Floors.get(4));
+		Thread animationThread = new Thread(new Runnable()
+        {
+            public void run()
+            {
+                while (true)
+                {
+                    repaint();
+                    try
+                    {
+                    	Thread.sleep(10);
+                    } catch (Exception ex)
+                    {
+                    	
+                    }
+                }
+            }
+        });
+
+        animationThread.start();
 	}
 	@Override
 	protected void paintComponent(Graphics g)
 	{	
+		Graphics2D gg = (Graphics2D) g;
 		super.paintComponent(g);
 		//background
 		this.setBackground(new Color(78,129,158));
 		//couleur du batiment
-		g.setColor(new Color(99,181,227));
+		gg.setColor(new Color(99,181,227));
 		//3 premier etage
-		g.fillRect(150,0,440,300);
+		gg.fillRect(150,0,440,300);
 		//2 dernier etage
-		g.fillRect(50,300,645,300);
+		gg.fillRect(50,300,645,300);
 		
 		//draw all floors
-		this.drawFloors(g);
-		this.drawSpace(g);
-		for(Floor f: Floors)
+		Floor.drawFloors(gg);
+		this.drawSpace(gg);
+		//draw the elevator
+		a.drawElevator(gg);
+		//draw the people
+		People.drawPeople(Peoples, gg);
+		//if ascenseur is stopped
+		boolean isIn = false;
+		Floor f=null;
+		if(!arrive && a.getPeople().isEmpty())
 		{
-			System.out.println(f);
+			MoveAsc(Peoples.get(0).getCurrentF(), a);
 		}
-		
-		this.genPeoples(5, g);
-		
-		a1.drawElevator(g);
-		
-		a1.goTo(Floors.get(0));
-		//MoveAsc(a1);
-		
-		for(Floor f : Floors)
+		if(a.getCurrentF().equals(Peoples.get(0).getCurrentF()))
+			arrive=true;
+		if(arrive)
 		{
-			System.out.println("Floor : "+f);
-			System.out.println(f.getPeoples());
+			MovePersonToAsc(Peoples.get(0),a);
+			arrive = false;
+		}
+		if(!arrive && !a.getPeople().isEmpty())
+		{
+			f = a.getPeople().get(0).getDestinationF();
+			MoveAsc(f, a);
+		}
+		if(a.getCurrentF().equals(f))
+		{
+			exitAsceneur(a.getPeople().get(0), a);
+		}
+	}
+	public void MoveAsc(Floor F,Ascenseur a)
+	{
+		System.out.println("Going from floor "+a.getCurrentF().getNumber()+" To floor :"+F.getNumber());
+		ArrayList<People> ps = a.getPeople();
+		boolean stop=false;
+		if(!stop)
+		{
+			//si l'ascenseur est arrivé a l'etage F
+			if( F.getAy()+5 == a.getY())
+			{
+				stop = true;
+				a.setCurrentF(F);
+			}
+			else
+			{
+				//si l'etage est en bas
+				if(F.getAy()+5 > a.getY())
+				{
+					a.setY(a.getY()+Elspeed);
+					if(!ps.isEmpty())
+					{
+						for(People p : ps)
+							p.setAy(p.getAy()+Elspeed);
+					}
+							
+				}
+				//si l'etage est en haut
+				if(F.getAy()+5 < a.getY())
+				{
+					a.setY(a.getY()-Elspeed);
+					if(!ps.isEmpty())
+					{
+						for(People p : ps)
+							p.setAy(p.getAy()-Elspeed);
+					}
+				}
+			}
+		}
+	}
+
+	public void MovePersonToAsc(People p,Ascenseur a)
+	{
+		boolean isIn = false;
+		if(!isIn)
+		{
+			if(p.getAx()==a.getX())
+			{
+				isIn=true;
+				a.addPeople(p);
+			}
+			if(!isIn)
+			{
+				p.setAx(p.getAx()+pSpeed);
+			}
 		}
 	}
 	
-	//goTo function still work in progress
-	public void MoveAsc(Ascenseur asc)
+	public void exitAsceneur(People p,Ascenseur a)
 	{
-		boolean stop=false;
-		while(!stop)
-		{
-			
-		}
-	}
-	//genérer un nombre spécifique de personnes
-	public void genPeoples(int n, Graphics g)
-	{
+		boolean end = false;
+		if(!end)
+			p.setAx(p.getAx()+pSpeed);
+		if(p.getAx()==500)
+			end = true;
 		
-		for(int i=0; i<n;i++)
+		if(end)
 		{
-			//random number generation from 0 to (n-1)
-			int min=0, max=n;
-			int DFn = (int)(Math.random() * (max - min + 1) + min);
-			//la nouvelle personne
-			People p;
-			//affecter selectionner l'étage
-			int Fn=i;
-			System.out.println(Fn);
-			if(i<3)
-			{
-				//creer la personne et affecter l'étage sélectionner
-				p = new People(90,Floors.get(Fn).getAy()+48,Floors.get(Fn));
-				//affecter une destination au hasard
-				p.setDestinationF(Floors.get(DFn));
-				p.drawPerson(g);
-			}else
-			{
-				//same thing but for the bottom floors
-				p = new People(40,Floors.get(Fn).getAy()+48,Floors.get(Fn));
-				p.setDestinationF(Floors.get(DFn));
-				p.drawPerson(g);
-			}
-			
-			Floors.get(Fn).addPerson(p);
-			Peoples.add(p);
-			System.out.println(p.getCurrentF());
+			a.getPeople().remove(p);
 		}
 	}
 	public int getFloorindex(int i)
@@ -118,56 +178,21 @@ public class Simulation extends JPanel
 		{
 			g3.fillRect(320, i, 100, 100);
 		}
-		//400 300 200 100
 	}
-	// to draw all floors
-	public void drawFloors(Graphics g) 
-	{
-		//draw floor lines
-		Graphics2D g2 = (Graphics2D) g ;
-		g2.setColor(new Color(0,66,112)); // white smock 245,245,245 
-		g2.setStroke(new BasicStroke(3));
-		
-		
-		//drawlines for each floor
-		for(int i=0,j=5;i<500 && j>0 ; i+=100,j--)
-		{
-			Floor newF= new Floor();
-			newF.setAy(i);
-			newF.setNumber(j);
-			System.out.println("newF : "+newF);
-			if(newF.getAy()<300)
-			{
-				g.drawLine(150,newF.getAy(),588,newF.getAy());
-				g.drawString(" Etage : "+newF.getNumber(), 50, i+30);
-			}
-			else
-			{
-				g.drawLine(50,newF.getAy(),693,newF.getAy());
-				g.drawString(" Etage : "+newF.getNumber() , 50, i+30);
-			}	
-			Floors.add(newF);
-		}
-	}
+	
 	public static void main(String[] args)
 	{
-		final JPanel panel;
-		final JFrame frame;
-		
-		Simulation s1 = new Simulation();
-		s1.setBounds(0, 0, 750, 500);
-		panel = new JPanel(null);
-		panel.setBackground(UIManager.getColor("Focus.color"));
-        panel.setPreferredSize(new Dimension(750, 500));
-        panel.add(s1);
+        JFrame frame = new JFrame("Train Demo");
         
-        frame = new JFrame("Simulation d'Ascenceurs");
+        Simulation s1 = new Simulation(5);
+		s1.setBounds(0, 0, 750, 500);
+		s1.setPreferredSize(new Dimension(750, 500));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      
         frame.setAlwaysOnTop(true);
+        frame.setSize(750, 535);
         frame.setResizable(false);
-        frame.getContentPane().add(panel);
-        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.add(s1);
         frame.setVisible(true);
 	}
 }

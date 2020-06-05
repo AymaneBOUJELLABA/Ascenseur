@@ -12,7 +12,7 @@ public class Ascenseur
 	private Floor CurrentF;
 	//la file des étages selectionner
 	// we could simply use an int 
-	private LinkedList<Floor> DestinationF;
+	private LinkedList<Floor> Calls;
 	//la capacité maximale de l'ascenseur
 	private final static int max_capacity = 4;
 	//arraylist des personne au bord de l'ascenseur
@@ -25,72 +25,80 @@ public class Ascenseur
 	private int state;
 	
 	//states:
-	private final static int Moving = 1;
-	private final static int Stopped = 0;
+	public final static int Moving = 1;
+	public final static int Stopped = 0;
 	
 	// we need two val boolean one is closed and one is opened
 
-	public Ascenseur() 
+	public Ascenseur(int y) 
 	{
-		DestinationF = new LinkedList<Floor>();
+		Calls = new LinkedList<Floor>();
+		People = new ArrayList<People>();
 		state = Stopped;
 		x=327;
-		y=410;
+		this.y=y;
 	}
-	//constructor
-	//draw : moved draw to simulation
-	//function to know the state (up down wait)
-	//function for people on board
-	//function to add people 
+	public Ascenseur(Floor currentF) 
+	{
+		Calls = new LinkedList<Floor>();
+		People = new ArrayList<People>();
+		state = Stopped;
+		x=327;
+		this.y=currentF.getAy()+5;
+		this.setCurrentF(currentF);
+	}
+	
+	//ajouter un nouveau personne a l'ascenseur
 	public int addPeople(People p)
 	{
-		if(People.size() < max_capacity-1)
+		if(People.contains(p))
+			return -2;
+		if(People.size() < max_capacity)
 		{
 			People.add(p);
+			Calls.add(p.getDestinationF());
 			return 1;
 		}
 		return -1;
 	}
-	//work in progress
-		public void goTo(Floor Dest)
-		{
-			if(state == Stopped)
-			{
-				DestinationF.addFirst(Dest);
-			}
-			else
-			{
-				DestinationF.addLast(Dest);
-			}
-		}
-	//call function work in progress
-	public void CallElevator(Floor source)
+	
+	public void MoveAsc(Floor F)
 	{
-		//si l'ascenseur n'est pas plein
-		if(People.size() < max_capacity-1)
+		boolean stop=false;
+		
+		while(!stop)
 		{
-			//si l'ascenseur est en arret
-			if(state == Stopped)
+			//si l'ascenseur est arrivé a l'etage F
+			if( F.getAy()+5 == this.getY())
 			{
-				//ajouter la source de l'appel à la file
-				DestinationF.add(source);
-				//on deplace l'asceneur vers la source
-				goTo(DestinationF.removeFirst());
+				stop = true;
 			}
 			else
 			{
-				DestinationF.addLast(source);
+				//si l'etage est en bas
+				if(F.getAy()+5 > this.getY())
+				{
+					this.setY(this.getY()+1);
+				}
+				//si l'etage est en haut
+				if(F.getAy()+5 < this.getY())
+				{
+					this.setY(this.getY()-1);
+				}
 			}
 		}
 	}
-	
+	//Moving Ascenseur
+	public void drawMoveAsc(Graphics g)
+	{
+		
+	}
+	//dessiner l'ascenseur
 	public void drawElevator(Graphics g)
 	{
 		g.setColor(new Color(237,245,247));
 		g.drawRect(x,y,85,90);
 	}
-	
-	
 	
 	public int getState()
 	{
@@ -107,14 +115,14 @@ public class Ascenseur
 		CurrentF = currentF;
 	}
 
-	public Queue<Floor> getDestinationF()
+	public LinkedList<Floor> getCalls()
 	{
-		return DestinationF;
+		return Calls;
 	}
 
-	public void setDestinationF(LinkedList<Floor> destinationF)
+	public void setCalls(LinkedList<Floor> Calls)
 	{
-		DestinationF = destinationF;
+		this.Calls = Calls;
 	}
 
 	public ArrayList<People> getPeople()
@@ -167,10 +175,11 @@ public class Ascenseur
 		this.state = state;
 	}
 
-	public static int getMaxCapacity()
+	public int getMaxCapacity()
 	{
 		return max_capacity;
 	}
+	
 
 	
 }
