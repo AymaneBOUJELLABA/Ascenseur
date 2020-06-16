@@ -21,12 +21,27 @@ public class Simulation extends JPanel
 	private ArrayList<Floor> Floors;
 	private ArrayList<People> Peoples;
 	private Ascenseur a;
-	//add booleans
-	boolean arrive = false;
+	//booleans for simulation
+	private boolean start = false;
+	private boolean stop = true;
+	//booleans for ascenseur
+	private boolean arrive = false;
+	private boolean arriveDest = false;
+	private boolean stopped = true;
+	private boolean empty = true;
+	//booleans for people
+	private boolean call = false;
+	private boolean onboard = false;
+	private boolean PersonArrived = false;
+	
+	private People nextP = null;
+
+	private int counter = 0;
+	private int time = 0;
 	public Simulation(int n)
 	{
 		Floors = Floor.genFloors();
-		Peoples = People.genPeoples(Floors, n);
+		Peoples = new ArrayList<People>();
 		a = new Ascenseur(Floors.get(4));
 		Thread animationThread = new Thread(new Runnable()
         {
@@ -34,7 +49,7 @@ public class Simulation extends JPanel
             {
                 while (true)
                 {
-                    repaint();
+                	repaint();
                     try
                     {
                     	Thread.sleep(10);
@@ -45,7 +60,6 @@ public class Simulation extends JPanel
                 }
             }
         });
-
         animationThread.start();
 	}
 	@Override
@@ -61,36 +75,72 @@ public class Simulation extends JPanel
 		gg.fillRect(150,0,440,300);
 		//2 dernier etage
 		gg.fillRect(50,300,645,300);
-		
 		//draw all floors
 		Floor.drawFloors(gg);
 		this.drawSpace(gg);
 		//draw the elevator
 		a.drawElevator(gg);
-		//draw the people
-		People.drawPeople(Peoples, gg);
-		//if ascenseur is stopped
-		boolean isIn = false;
-		Floor f=null;
-		if(!arrive && a.getPeople().isEmpty())
+		//draw all the people
+		counter++;
+		if(counter == 500)
 		{
-			MoveAsc(Peoples.get(0).getCurrentF(), a);
+			counter = 0;
+			People.genPerson(Peoples, Floors);
+			start=true;
 		}
-		if(a.getCurrentF().equals(Peoples.get(0).getCurrentF()))
-			arrive=true;
-		if(arrive)
+		if(!Peoples.isEmpty())
 		{
-			MovePersonToAsc(Peoples.get(0),a);
-			arrive = false;
+			People.drawPeople(Peoples, gg);
 		}
-		if(!arrive && !a.getPeople().isEmpty())
+		if(start)
 		{
-			f = a.getPeople().get(0).getDestinationF();
-			MoveAsc(f, a);
-		}
-		if(a.getCurrentF().equals(f))
-		{
-			exitAsceneur(a.getPeople().get(0), a);
+			Floor f=null;
+			if(!call && nextP==null)
+			{
+				for(Floor fs : Floors)
+				{
+					if(!fs.getPeoples().isEmpty())
+					{
+						nextP = fs.getPeoples().get(0);
+						System.out.println(nextP);
+						call = true;
+						break;
+					}
+				}
+			}
+			if(call)
+			{
+				if(stopped && !arrive && a.getPeople().isEmpty())
+				{
+					MoveAsc(nextP.getCurrentF(), a);
+				}
+				if(a.getCurrentF().equals(nextP.getCurrentF()))
+				{
+					arrive=true;
+					stopped = true;
+				}
+				if(arrive && !onboard)
+				{
+					MovePersonToAsc(nextP,a);
+					empty = false;
+					arrive = false;
+				}
+				if(!arriveDest && !a.getPeople().isEmpty())
+				{
+					f = a.getPeople().get(0).getDestinationF();
+					MoveAsc(f, a);
+				}
+				if(a.getCurrentF().equals(nextP.getDestinationF()))
+				{
+					arriveDest = true;
+				}
+				if(arriveDest)
+				{
+					onboard = false;
+					exitAsceneur(nextP, a);
+					stopped = true;
+				}
+			}
 		}
 	}
 	public void MoveAsc(Floor F,Ascenseur a)
@@ -132,7 +182,6 @@ public class Simulation extends JPanel
 			}
 		}
 	}
-
 	public void MovePersonToAsc(People p,Ascenseur a)
 	{
 		boolean isIn = false;
@@ -140,6 +189,7 @@ public class Simulation extends JPanel
 		{
 			if(p.getAx()==a.getX())
 			{
+				onboard = true;
 				isIn=true;
 				a.addPeople(p);
 			}
@@ -161,6 +211,9 @@ public class Simulation extends JPanel
 		if(end)
 		{
 			a.getPeople().remove(p);
+			Peoples.remove(p);
+			call = false;
+			nextP = null;
 		}
 	}
 	public int getFloorindex(int i)

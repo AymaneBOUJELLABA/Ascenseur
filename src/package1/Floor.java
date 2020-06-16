@@ -43,7 +43,6 @@ public class Floor
 	}
 	public static void drawFloors(Graphics g) 
 	{
-		
 		//draw floor lines
 		Graphics2D g2 = (Graphics2D) g ;
 		g2.setColor(new Color(0,66,112)); // white smock 245,245,245 

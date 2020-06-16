@@ -42,7 +42,7 @@ public class People
 		this.Ay=Ay;
 		this.CurrentF = CurrentF;
 	}
-	public void drawPerson(Graphics g)
+	private void drawPerson(Graphics g)
 	{
 		Graphics2D g2D = (Graphics2D) g;
 		File pathToFile = new File("student.png");
@@ -60,25 +60,6 @@ public class People
 			e.printStackTrace();
 		}	
 	}
-	public void drawKiller(Graphics g)
-	{
-		Graphics2D g2D = (Graphics2D) g;
-		File pathToFile = new File("knife.png");
-        try
-        {
-        	g2D.setColor(new Color(237,245,247)); // white smock 245,245,245 
-    		g2D.setStroke(new BasicStroke(3));
-			Image img = ImageIO.read(pathToFile);
-			g.drawImage(img, Ax, Ay,60,50, null);
-			g.drawString(" DestFloor : " + DestinationF.getNumber(),Ax, Ay+10);
-			
-        } catch (IOException e)
-        {
-			e.printStackTrace();
-		}
-
-		
-	}
 	//genérer un nombre spécifique de personnes
 	public static ArrayList<People> genPeoples(ArrayList<Floor> Floors,int n)
 	{
@@ -88,7 +69,11 @@ public class People
 			//random number generation from 0 to (n-1)
 			int min=0, max=n-1;
 			//Destination floor random number
-			int DFn = (int)(Math.random() * (max - min + 1) + min);
+			int DFn;
+			do
+			{
+				 DFn = (int)(Math.random() * (max - min + 1) + min);
+			}while(DFn == i);
 			//la nouvelle personne
 			People p;
 			//selectionner l'étage
@@ -111,6 +96,38 @@ public class People
 		
 		return peoples;
 	}
+	
+	public static void genPerson(ArrayList<People> People, ArrayList<Floor> Floors)
+	{
+		//random number generation from 0 to (n-1)
+		int min=0, max=Floors.size()-1;
+		//Destination floor random number
+		int DFn = (int)(Math.random() * (max - min + 1) + min);
+		int Fn;
+		do
+		{
+			Fn = (int)(Math.random() * (max - min + 1) + min);
+
+		}while(Fn==DFn);
+		//la nouvelle personne
+		People p;
+		//selectionner l'étage
+		
+		if(Fn<3)
+		{
+			//creer la personne et affecter l'étage sélectionner
+			p = new People(90,Floors.get(Fn).getAy()+48,Floors.get(Fn));
+			//affecter une destination au hasard
+			p.setDestinationF(Floors.get(DFn));
+		}else
+		{
+			//same thing but for the bottom floors
+			p = new People(40,Floors.get(Fn).getAy()+48,Floors.get(Fn));
+			p.setDestinationF(Floors.get(DFn));
+		}
+		Floors.get(Fn).addPerson(p);
+		People.add(p);
+	}
 	public static void drawPeople(ArrayList<People> ps,Graphics g)
 	{
 		for(People p: ps)
@@ -118,7 +135,6 @@ public class People
 			p.drawPerson(g);
 		}
 	}
-	
 	public static Image getIcon()
 	{
 		return icon;
