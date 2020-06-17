@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Queue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.LinkedList;
 public class Ascenseur
 {
@@ -16,7 +17,7 @@ public class Ascenseur
 	//la capacité maximale de l'ascenseur
 	private final static int max_capacity = 4;
 	//arraylist des personne au bord de l'ascenseur
-	private ArrayList<People> People; 
+	private CopyOnWriteArrayList<People> People; 
 	//l'état des ports de l'ascenseur true = overt, false = fermé
 	private boolean doorsopen;
 	//position de l'ascenseur
@@ -33,7 +34,7 @@ public class Ascenseur
 	public Ascenseur(int y) 
 	{
 		Calls = new LinkedList<Floor>();
-		People = new ArrayList<People>();
+		People = new CopyOnWriteArrayList<People>();
 		state = Stopped;
 		x=327;
 		this.y=y;
@@ -41,7 +42,7 @@ public class Ascenseur
 	public Ascenseur(Floor currentF) 
 	{
 		Calls = new LinkedList<Floor>();
-		People = new ArrayList<People>();
+		People = new CopyOnWriteArrayList<People>();
 		state = Stopped;
 		x=327;
 		this.y=currentF.getAy()+5;
@@ -125,12 +126,12 @@ public class Ascenseur
 		this.Calls = Calls;
 	}
 
-	public ArrayList<People> getPeople()
+	public CopyOnWriteArrayList<People> getPeople()
 	{
 		return People;
 	}
 
-	public void setPeople(ArrayList<People> people)
+	public void setPeople(CopyOnWriteArrayList<People> people)
 	{
 		People = people;
 	}

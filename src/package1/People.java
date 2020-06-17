@@ -8,6 +8,7 @@ import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.imageio.ImageIO;
 
@@ -61,9 +62,9 @@ public class People
 		}	
 	}
 	//genérer un nombre spécifique de personnes
-	public static ArrayList<People> genPeoples(ArrayList<Floor> Floors,int n)
+	public static CopyOnWriteArrayList<People> genPeoples(ArrayList<Floor> Floors,int n)
 	{
-		ArrayList<People> peoples = new ArrayList<People>();
+		CopyOnWriteArrayList<People> peoples = new CopyOnWriteArrayList<People>();
 		for(int i=0; i<n;i++)
 		{
 			//random number generation from 0 to (n-1)
@@ -97,7 +98,7 @@ public class People
 		return peoples;
 	}
 	
-	public static void genPerson(ArrayList<People> People, ArrayList<Floor> Floors)
+	public static void genPerson(CopyOnWriteArrayList<People> People, ArrayList<Floor> Floors)
 	{
 		//random number generation from 0 to (n-1)
 		int min=0, max=Floors.size()-1;
@@ -128,7 +129,7 @@ public class People
 		Floors.get(Fn).addPerson(p);
 		People.add(p);
 	}
-	public static void drawPeople(ArrayList<People> ps,Graphics g)
+	public static void drawPeople(CopyOnWriteArrayList<People> ps,Graphics g)
 	{
 		for(People p: ps)
 		{
