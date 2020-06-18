@@ -30,11 +30,9 @@ public class People
 	private Floor DestinationF;
 	//vitesse de mouvement
 	private int PSpeed = 1;
-	//we could use enum for that 
+	//person state
 	private PMode state;
 	private PMode direction;
-	//we need to know if the person is up, down, right or left
-	private int cFloor;
 
 	public People(int Ax,int Ay)
 	{
@@ -62,7 +60,7 @@ public class People
 		this.direction = PMode.RIGHT;
 		this.DestX = DestX;
 	}
-	private void drawPerson(Graphics g)
+	public void drawPerson(Graphics g)
 	{
 		Graphics2D g2D = (Graphics2D) g;
 		File pathToFile = new File("student.png");
@@ -73,13 +71,12 @@ public class People
     		
 			Image img = ImageIO.read(pathToFile);
 			g.drawImage(img, Ax+50, Ay,60,50, null);	
-			g.drawString(" DestFloor : " + DestinationF.getNumber(),Ax, Ay+10);
-			System.out.println("Ax = " + Ax + " || DestX + " + DestX);
+			g.drawString(" Dest : " + DestinationF.getNumber(),Ax+40, Ay-5);
 			if(Ax == DestX)
 			{
-
 				state = PMode.WAIT;
 			}
+			
 			else
 			{
 				state = direction;
@@ -92,9 +89,9 @@ public class People
 		}	
 	}
 	//genérer un nombre spécifique de personnes
-	public static CopyOnWriteArrayList<People> genPeoples(ArrayList<Floor> Floors,int n)
+	public static ArrayList<People> genPeoples(ArrayList<Floor> Floors,int n)
 	{
-		CopyOnWriteArrayList<People> peoples = new CopyOnWriteArrayList<People>();
+		ArrayList<People> peoples = new ArrayList<People>();
 		for(int i=0; i<n;i++)
 		{
 			//random number generation from 0 to (n-1)
@@ -128,7 +125,7 @@ public class People
 		return peoples;
 	}
 	
-	public static void genPerson(CopyOnWriteArrayList<People> People, ArrayList<Floor> Floors)
+	public static void genPerson(ArrayList<People> People, ArrayList<Floor> Floors)
 	{
 		//random number generation from 0 to (n-1)
 		int min=0, max=Floors.size()-1;
@@ -176,7 +173,7 @@ public class People
 		}
 	}
 	
-	public static void drawPeople(CopyOnWriteArrayList<People> ps,Graphics g)
+	public static void drawPeople(ArrayList<People> ps,Graphics g)
 	{
 		for(People p: ps)
 		{

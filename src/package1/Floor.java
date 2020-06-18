@@ -5,6 +5,9 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Iterator;
+
+import package1.People.PMode;
 
 public class Floor
 {
@@ -42,7 +45,7 @@ public class Floor
 		}
 		return Floors;
 	}
-	public static void drawFloors(Graphics g) 
+	public void drawFloors(Graphics g) 
 	{
 		//draw floor lines
 		Graphics2D g2 = (Graphics2D) g ;
@@ -65,9 +68,27 @@ public class Floor
 				g.drawString(" Etage : "+newF.getNumber() , 50, i+30);
 			}	
 		}
+        
+		Iterator<People> it = Departing.iterator();
+        
+        while (it.hasNext())
+        {
+        	People temp = it.next();
+            
+            temp.setDestX(775);
+            temp.setState(PMode.RIGHT);
+            temp.drawPerson(g);
+            
+            if (temp.getAx() == temp.getDestX())
+            {
+                it.remove();
+            }
+        }
 	}
-	
-	//removed draw to simulation
+	public void ClearDeparting()
+	{
+		Departing.clear();
+	}
 	public int getNumber() 
 	{
 		return this.number;

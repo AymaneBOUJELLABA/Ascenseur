@@ -13,15 +13,12 @@ import java.util.LinkedList;
 public class Ascenseur
 {
 	//l'étage courrant de l'ascenseur 
-	// we could simply use an int 
 	private Floor CurrentF;
 	//la file des étages selectionner
-	// we could simply use an int 
-	private LinkedList<Floor> Calls;
 	//la capacité maximale de l'ascenseur
 	private final static int max_capacity = 4;
 	//arraylist des personne au bord de l'ascenseur
-	private CopyOnWriteArrayList<People> People; 
+	private ArrayList<People> People; 
 	//position de l'ascenseur
 	private int x,y;
 	//l'état de l'ascenseur (en mouvement, en arret )
@@ -44,20 +41,18 @@ public class Ascenseur
 	
 	public Ascenseur(int y) 
 	{
-		Calls = new LinkedList<Floor>();
-		People = new CopyOnWriteArrayList<People>();
+		People = new ArrayList<People>();
 		State = Mode.WAIT;
 		Direction=Mode.UP;
 		x=327;
 		this.y=y;
 	}
-	public Ascenseur(Floor currentF) 
+	public Ascenseur(Floor currentF,int x) 
 	{
-		Calls = new LinkedList<Floor>();
-		People = new CopyOnWriteArrayList<People>();
+		People = new ArrayList<People>();
 		State = Mode.WAIT;
 		Direction=Mode.UP;
-		x=327;
+		this.x=x;
 		this.y=currentF.getAy()+5;
 		this.setCurrentF(currentF);
 	}
@@ -76,18 +71,18 @@ public class Ascenseur
 	}
 	public void Depart(ArrayList<People> Departing)
 	{
+		
+
 		Iterator<People> it = this.getPeople().iterator();
 		while(it.hasNext())
 		{
 			People p = it.next();
 			if(p.getDestinationF().equals(this.getCurrentF()))
 			{
-				p.setDestX(p.getDestX()+150);
+				p.setDestX(775);
 				p.setState(PMode.RIGHT);
 				Departing.add(p);
-				
-				this.People.remove(p);
-				
+				it.remove();
 			}
 		}
 	}
@@ -95,7 +90,8 @@ public class Ascenseur
 	{
 		switch(State)
 		{
-			case WAIT : break;
+			case WAIT : this.setY(this.getY());
+						break;
 			
 			case UP : 	this.setY(this.getY() - ESpeed);
 						
@@ -149,26 +145,15 @@ public class Ascenseur
 
 	public void setCurrentF(Floor currentF)
 	{
-		System.out.println("CFloor = " + CurrentF);
 		CurrentF = currentF;
 	}
 
-	public LinkedList<Floor> getCalls()
-	{
-		return Calls;
-	}
-
-	public void setCalls(LinkedList<Floor> Calls)
-	{
-		this.Calls = Calls;
-	}
-
-	public CopyOnWriteArrayList<People> getPeople()
+	public ArrayList<People> getPeople()
 	{
 		return People;
 	}
 
-	public void setPeople(CopyOnWriteArrayList<People> people)
+	public void setPeople(ArrayList<People> people)
 	{
 		People = people;
 	}

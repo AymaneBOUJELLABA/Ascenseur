@@ -23,11 +23,10 @@ public class Simulation extends JPanel
 	
 	private ArrayList<Floor> Floors;
 	//private ArrayList<People> Peoples;
-	private CopyOnWriteArrayList<People> Peoples;
+	private ArrayList<People> Peoples;
 	private Ascenseur a;
+	private Ascenseur b;
 	//booleans for ascenseur
-	
-	
 	private Timer timer;
     private boolean isRunning = true;
     private int counter;
@@ -35,20 +34,27 @@ public class Simulation extends JPanel
 	public Simulation(int refreshRate)
 	{
 		Floors = Floor.genFloors();
-		Peoples = new CopyOnWriteArrayList<People>();
-		a = new Ascenseur(Floors.get(4));
+		Peoples = new ArrayList<People>();
+		a = new Ascenseur(Floors.get(4),270);
+		b = new Ascenseur(Floors.get(4),377);
+		
 		timer = new Timer(refreshRate, (e) -> {
             
             counter += refreshRate;
             
-            if (counter / 500 == 1)
+            if (counter / 1000 == 1)
             {
                 counter = 0;
                 ++timeElapsedInSecs;
                 
                 if (timeElapsedInSecs % 5 == 0)
                 {
-                	People.genPerson(Peoples, Floors);
+                	int min=1, max=5;
+            		//Destination floor random number
+            		int nbr = (int)(Math.random() * (max - min + 1) + min);
+                	
+            		for(int i=0 ; i <nbr ; i++)
+            			People.genPerson(Peoples, Floors);
                 }
             }
             
@@ -74,10 +80,12 @@ public class Simulation extends JPanel
 		//2 dernier etage
 		gg.fillRect(50,300,645,300);
 		//draw all floors
-		Floor.drawFloors(gg);
+		Floors.get(0).drawFloors(gg);
 		this.drawSpace(gg);
+		this.drawSpace2(gg);
 		//draw the elevator
 		a.drawElevator(gg);
+		b.drawElevator(gg);
 		//draw all the people
 		if(!Peoples.isEmpty())
 		{
@@ -85,7 +93,7 @@ public class Simulation extends JPanel
 		}
 
 		manouver(a);
-		
+		manouver(b);
 	}
 	public void manouver(Ascenseur a)
 	{
@@ -161,7 +169,7 @@ public class Simulation extends JPanel
 			
 			for(int i=0; i < size ;i++)
 			{
-				a.getPeople().get(i).setDestX(327-i*20);
+				a.getPeople().get(i).setDestX((a.getX())-i*20);
 			}
 
 			if(!a.getPeople().isEmpty())
@@ -191,8 +199,8 @@ public class Simulation extends JPanel
 		
 		if(a.prepare)
 		{
-			CopyOnWriteArrayList<People> temp = a.getPeople();
-			System.out.println(temp);
+			a.setState(Mode.WAIT);
+			ArrayList<People> temp = a.getPeople();
 			if(!temp.isEmpty())
 			{
 				if(temp.get(temp.size()-1).getAx() == temp.get(temp.size()-1).getDestX())
@@ -215,7 +223,6 @@ public class Simulation extends JPanel
 						if(p.getAx() > a.getX())
 						{
 							it.remove();
-							break;
 						}
 					}
 				}
@@ -225,6 +232,7 @@ public class Simulation extends JPanel
 				a.boarding = false;
 				a.finished = true;
 			}
+			
 		}
 		
 		if(a.launch)
@@ -246,7 +254,18 @@ public class Simulation extends JPanel
 		g3.setColor(new Color(0,66,112));
 		for(int i = 0 ; i<500;i+=100)
 		{
-			g3.fillRect(320, i, 100, 100);
+			g3.fillRect(263, i, 100, 100);
+		}
+	}
+	public void drawSpace2(Graphics g) 
+	{
+		
+		//Elevator space
+		Graphics2D g3 = (Graphics2D) g ;
+		g3.setColor(new Color(0,66,112));
+		for(int i = 0 ; i<500;i+=100)
+		{
+			g3.fillRect(370, i, 100, 100);
 		}
 	}
 	
