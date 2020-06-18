@@ -6,11 +6,15 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+
+import package1.Ascenseur.Mode;
+import package1.People.PMode;
 
 
 public class Simulation extends JPanel
@@ -33,6 +37,10 @@ public class Simulation extends JPanel
 	private boolean stopped = true;
 	private boolean empty = true;
 	private boolean goNext = true;
+	private boolean standby = true;
+	private boolean boarding = false;
+	private boolean prepare = false;
+	private boolean launch = false;
 	//booleans for people
 	private boolean call = false;
 	private boolean onboard = false;
@@ -84,12 +92,8 @@ public class Simulation extends JPanel
 		//draw the elevator
 		a.drawElevator(gg);
 		//draw all the people
-		if(a.getPeople().isEmpty())
-			System.out.println("a is empty");
-		else
-			System.out.println(a.getPeople());
 		counter++;
-		if(counter == 500)
+		if(counter == 200)
 		{
 			counter = 0;
 			People.genPerson(Peoples, Floors);
@@ -99,34 +103,166 @@ public class Simulation extends JPanel
 		{
 			People.drawPeople(Peoples, gg);
 		}
-		if(start)
+		
+		for(Floor f : Floors)
 		{
-
-			for(Floor fs : Floors)
+			System.out.println("f has : " + f.getPeoples().size() + " person");
+		}
+		System.out.println("A has : "+ a.getPeople().size() + " person");
+		manouver(a);
+		
+	}
+	public void manouver(Ascenseur a)
+	{
+		//si l'ascenseur est vide et aucune personne n'existe
+		if(standby)
+		{
+			//chercher ou se trouve les personnes
+			for(Floor f: Floors)
 			{
-				if(!fs.getPeoples().isEmpty())
+				if(f.getPeoples().isEmpty())
+					continue;
+				else
 				{
+					//Move elevator to upper floor
+					a.setState(Mode.UP);
+					
 					call = true;
-					stopped = false;
-					goNext = false;
-					exists = true;
+					standby = false;
+					
 					break;
 				}
 			}
-			if(Peoples.isEmpty())
+		}
+		//Move elevator to targeted passengers
+		if(call)
+		{
+			if ( (a.getY()-5) % 100 == 0)
 			{
-				exists = false;
-			}
-			if(exists)
-			{
-				for(People nextP : Peoples)
-				{
-					manouver(a,nextP);
-				}
+				//affecter l'etage a l'ascenseur
+				a.setCurrentF(Floors.get( a.getY()/100 ));
+				boolean arrivedD = false;
+                
+                for (People p  : a.getPeople())
+                {
+                    if (p.getDestinationF().equals(a.getCurrentF()))
+                    {
+                        arrivedD = true;
+                    }
+                }
+                
+                if(a.getCurrentF().getPeoples().isEmpty() && !arrivedD)
+                {
+                	a.setState( a.getDirection() == Mode.UP ? Mode.UP : Mode.DOWN);
+                }
+                else
+                {
+                	a.setState(Mode.WAIT);
+                	for(People p: a.getCurrentF().getPeoples())
+                	{
+                		p.setState(PMode.RIGHT);
+                	}
+                	call = false;
+                	boarding = true;	
+                }
 			}
 		}
+		
+		if(a.getState() == Mode.WAIT && boarding)
+		{
+			//unload the passengers
+			
+			a.Depart(a.getCurrentF().getDeparting());
+			
+			//load the passengers
+			Iterator<People> it = a.getCurrentF().getPeoples().iterator();
+			while(it.hasNext())
+			{
+				People P = it.next();
+				a.addPeople(P);
+				it.remove();
+			}
+			int size = a.getPeople().size();
+			
+			for(int i=0; i < size ;i++)
+			{
+				a.getPeople().get(i).setDestX(327-i*20);
+			}
+
+			if(!a.getPeople().isEmpty())
+			{
+				boarding = false;
+				prepare = true;
+			}
+			else
+			{
+				boarding = false;
+				finished = true;
+			}
+		}
+		
+		
+		if(finished)
+		{
+
+			a.setState(Mode.WAIT);
+			
+			if(a.getState() == Mode.WAIT)
+			{
+				finished = false;
+				standby = true;
+			}
+		}
+		
+		if(prepare)
+		{
+			CopyOnWriteArrayList<People> temp = a.getPeople();
+			System.out.println(temp);
+			if(!temp.isEmpty())
+			{
+				if(temp.get(temp.size()-1).getAx() == temp.get(temp.size()-1).getDestX())
+				{
+					System.out.println("State changed");
+					a.setState(Mode.WAIT);
+					prepare = false;
+					launch = true;
+				}
+				else
+				{
+					Iterator<People> it = temp.iterator();
+					
+					while(it.hasNext())
+					{
+						People p = it.next();
+						if(p.getAx() == a.getX())
+						{
+							break;
+						}
+						if(p.getAx() > a.getX())
+						{
+							it.remove();
+							break;
+						}
+					}
+				}
+			}
+			else
+			{
+				boarding = false;
+				finished = true;
+			}
+		}
+		
+		if(launch)
+		{
+			System.out.println("a.getDirect = " +a.getDirection());
+			a.setState( a.getDirection() == Mode.UP ? Mode.UP : Mode.DOWN);
+			
+			launch = false;
+			
+			call = true;
+		}
 	}
-	
 	public void manouver(Ascenseur a, People nextP)
 	{
 		if(!stopped && !arrive && a.getPeople().isEmpty())

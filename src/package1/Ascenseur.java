@@ -3,8 +3,12 @@ import java.awt.*;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import package1.People.PMode;
+
 import java.util.LinkedList;
 public class Ascenseur
 {
@@ -18,24 +22,19 @@ public class Ascenseur
 	private final static int max_capacity = 4;
 	//arraylist des personne au bord de l'ascenseur
 	private CopyOnWriteArrayList<People> People; 
-	//l'état des ports de l'ascenseur true = overt, false = fermé
-	private boolean doorsopen;
 	//position de l'ascenseur
 	private int x,y;
 	//l'état de l'ascenseur (en mouvement, en arret )
-	private int state;
-	
-	//states:
-	public final static int Moving = 1;
-	public final static int Stopped = 0;
-	
-	// we need two val boolean one is closed and one is opened
-
+	private Mode State;
+	private Mode Direction;
+	//vitesse de l'assenceur
+	private int ESpeed = 1;
 	public Ascenseur(int y) 
 	{
 		Calls = new LinkedList<Floor>();
 		People = new CopyOnWriteArrayList<People>();
-		state = Stopped;
+		State = Mode.WAIT;
+		Direction=Mode.UP;
 		x=327;
 		this.y=y;
 	}
@@ -43,7 +42,8 @@ public class Ascenseur
 	{
 		Calls = new LinkedList<Floor>();
 		People = new CopyOnWriteArrayList<People>();
-		state = Stopped;
+		State = Mode.WAIT;
+		Direction=Mode.UP;
 		x=327;
 		this.y=currentF.getAy()+5;
 		this.setCurrentF(currentF);
@@ -57,55 +57,78 @@ public class Ascenseur
 		if(People.size() < max_capacity)
 		{
 			People.add(p);
-			Calls.add(p.getDestinationF());
 			return 1;
 		}
 		return -1;
 	}
-	
-	public void MoveAsc(Floor F)
+	public void Depart(ArrayList<People> Departing)
 	{
-		boolean stop=false;
-		
-		while(!stop)
+		Iterator<People> it = this.getPeople().iterator();
+		while(it.hasNext())
 		{
-			//si l'ascenseur est arrivé a l'etage F
-			if( F.getAy()+5 == this.getY())
+			People p = it.next();
+			if(p.getDestinationF().equals(this.getCurrentF()))
 			{
-				stop = true;
-			}
-			else
-			{
-				//si l'etage est en bas
-				if(F.getAy()+5 > this.getY())
-				{
-					this.setY(this.getY()+1);
-				}
-				//si l'etage est en haut
-				if(F.getAy()+5 < this.getY())
-				{
-					this.setY(this.getY()-1);
-				}
+				p.setDestX(p.getDestX()+150);
+				p.setState(PMode.RIGHT);
+				Departing.add(p);
+				
+				this.People.remove(p);
+				
 			}
 		}
 	}
-	//Moving Ascenseur
-	public void drawMoveAsc(Graphics g)
+	public void MoveAsc()
 	{
-		
+		switch(State)
+		{
+			case WAIT : break;
+			
+			case UP : 	this.setY(this.getY() - ESpeed);
+						
+						if(!this.getPeople().isEmpty())
+						{
+							for(People p : this.getPeople())
+							{
+								p.setAy(p.getAy() - ESpeed);
+							}
+						}
+						
+						if(getY() == 100)
+						{
+							Direction = Mode.DOWN;
+						}
+						break;
+						
+			case DOWN : this.setY(this.getY() + ESpeed);
+						
+						if(!this.getPeople().isEmpty())
+						{
+							for(People p : this.getPeople())
+							{
+								p.setAy(p.getAy() + ESpeed);
+							}
+						}
+						
+						if(getY() == 400)
+						{
+							Direction = Mode.UP;
+						}
+						break;
+						
+			default : 	System.err.println("WRONG STATE!");
+						break;
+		}
 	}
+
 	//dessiner l'ascenseur
 	public void drawElevator(Graphics g)
 	{
 		g.setColor(new Color(237,245,247));
 		g.drawRect(x,y,85,90);
+		MoveAsc();
 	}
 	
-	public int getState()
-	{
-		return state;
-	}
-
 	public Floor getCurrentF()
 	{
 		return CurrentF;
@@ -113,6 +136,7 @@ public class Ascenseur
 
 	public void setCurrentF(Floor currentF)
 	{
+		System.out.println("CFloor = " + CurrentF);
 		CurrentF = currentF;
 	}
 
@@ -136,16 +160,6 @@ public class Ascenseur
 		People = people;
 	}
 
-	public boolean isDoorsopen()
-	{
-		return doorsopen;
-	}
-
-	public void setDoorsopen(boolean doorsopen)
-	{
-		this.doorsopen = doorsopen;
-	}
-
 	public int getX()
 	{
 		return x;
@@ -165,15 +179,23 @@ public class Ascenseur
 	{
 		this.y = y;
 	}
-
-	public int isState()
+	public Mode getDirection()
 	{
-		return state;
+		return Direction;
 	}
 
-	public void setState(int state)
+	public void setDirection(Mode Direction)
 	{
-		this.state = state;
+		this.Direction = Direction;
+	}
+	public Mode getState()
+	{
+		return State;
+	}
+
+	public void setState(Mode state)
+	{
+		this.State = state;
 	}
 
 	public int getMaxCapacity()
@@ -181,6 +203,6 @@ public class Ascenseur
 		return max_capacity;
 	}
 	
-
+	public enum Mode {UP, DOWN, WAIT};
 	
 }

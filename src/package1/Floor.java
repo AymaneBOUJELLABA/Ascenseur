@@ -12,8 +12,7 @@ public class Floor
 	private int number;
 	//list des personne dans ce étage
 	private ArrayList<People> Peoples;
-	//l'etat de l'ascenseur dans l'étage
-	private boolean AscenseurState;
+	private ArrayList<People> Departing;
 	//we need an y for the drawing 
 	private int Ay;
 	
@@ -22,10 +21,12 @@ public class Floor
 		this.Ay=Ay;
 		this.number=number;
 		Peoples = new ArrayList<People>();
+		Departing = new ArrayList<People>();
 	}
 	public Floor()
 	{
 		Peoples = new ArrayList<People>();
+		Departing = new ArrayList<People>();
 	}
 	
 	// to draw all floors
@@ -106,6 +107,14 @@ public class Floor
 	public void setPeoples(ArrayList<People> peoples)
 	{
 		Peoples = peoples;
+	}
+	public ArrayList<People> getDeparting()
+	{
+		return Departing;
+	}
+	public void setDeparting(ArrayList<People> Departing)
+	{
+		this.Departing = Departing;
 	}
 	public int getAy()
 	{

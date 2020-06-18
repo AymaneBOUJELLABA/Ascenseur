@@ -12,6 +12,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.imageio.ImageIO;
 
+import package1.Ascenseur.Mode;
+
 import javax.imageio.ImageIO;
 
 public class People
@@ -20,15 +22,17 @@ public class People
 	private static Image icon;
 	//position du personne
 	private int Ax,Ay;
+	//Target destinationX for people
+	private int DestX;
 	//étage originale 
-	//I don't think we need it to be floor just a simple int 
 	private Floor CurrentF;
-	//destination
-	//I don't think we need it to be floor just a simple int 
+	//destinatio
 	private Floor DestinationF;
-	//si la personne est dans l'ascenseur
+	//vitesse de mouvement
+	private int PSpeed = 1;
 	//we could use enum for that 
-	private boolean state;
+	private PMode state;
+	private PMode direction;
 	//we need to know if the person is up, down, right or left
 	private int cFloor;
 
@@ -36,12 +40,27 @@ public class People
 	{
 		this.Ax=Ax;
 		this.Ay=Ay;
+		this.state = PMode.WAIT;
+		this.direction = PMode.RIGHT;
+		this.DestX = Ax;
 	}
 	public People(int Ax,int Ay,Floor CurrentF)
 	{
 		this.Ax=Ax;
 		this.Ay=Ay;
 		this.CurrentF = CurrentF;
+		this.state = PMode.WAIT;
+		this.direction = PMode.RIGHT;
+		this.DestX = Ax;
+	}
+	public People(int Ax,int Ay,Floor CurrentF, int DestX)
+	{
+		this.Ax=Ax;
+		this.Ay=Ay;
+		this.CurrentF = CurrentF;
+		this.state = PMode.WAIT;
+		this.direction = PMode.RIGHT;
+		this.DestX = DestX;
 	}
 	private void drawPerson(Graphics g)
 	{
@@ -53,9 +72,20 @@ public class People
     		g2D.setStroke(new BasicStroke(3));
     		
 			Image img = ImageIO.read(pathToFile);
-			g.drawImage(img, Ax+50, Ay,60,50, null);
-			
+			g.drawImage(img, Ax+50, Ay,60,50, null);	
 			g.drawString(" DestFloor : " + DestinationF.getNumber(),Ax, Ay+10);
+			System.out.println("Ax = " + Ax + " || DestX + " + DestX);
+			if(Ax == DestX)
+			{
+
+				state = PMode.WAIT;
+			}
+			else
+			{
+				state = direction;
+			}
+			
+			MovePerson();
 		} catch (IOException e)
         {
 			e.printStackTrace();
@@ -129,6 +159,23 @@ public class People
 		Floors.get(Fn).addPerson(p);
 		People.add(p);
 	}
+	public void MovePerson()
+	{
+		switch(state)
+		{
+			case WAIT : break;
+						
+			case LEFT : this.setAx(this.getAx() - PSpeed);
+						break;
+			
+			case RIGHT : this.setAx(this.getAx() + PSpeed);
+						break;
+						
+			default : 	System.err.println("WRONG STATE!");
+						break;
+		}
+	}
+	
 	public static void drawPeople(CopyOnWriteArrayList<People> ps,Graphics g)
 	{
 		for(People p: ps)
@@ -160,13 +207,22 @@ public class People
 	{
 		DestinationF = destinationF;
 	}
-	public boolean isState()
+	public PMode getState()
 	{
 		return state;
 	}
-	public void setState(boolean state)
+
+	public void setState(PMode state)
 	{
 		this.state = state;
+	}
+	public int getDestX()
+	{
+		return DestX;
+	}
+	public void setDestX(int DestX)
+	{
+		this.DestX = DestX;
 	}
 	public int getAx()
 	{
@@ -184,12 +240,23 @@ public class People
 	{
 		Ay = ay;
 	}
+	public int getPSpeed()
+	{
+		return PSpeed;
+	}
+	
+	public void setPSpeed(int PSpeed)
+	{
+		this.PSpeed = PSpeed;
+	}
+	
 	@Override
 	public String toString()
 	{
 		return "People [Ax=" + Ax + ", Ay=" + Ay + ", CurrentF=" + CurrentF + ", DestinationF=" + DestinationF + "]";
 	}
 	
+	public enum PMode {LEFT, RIGHT,WAIT};
 	
 	//we need constrator to add the values
 	//we need a function to draw in the panel 
