@@ -51,13 +51,13 @@ public class Ascenseur
 		x=327;
 		this.y=y;
 	}
-	public Ascenseur(Floor currentF) 
+	public Ascenseur(Floor currentF,int x) 
 	{
 		Calls = new LinkedList<Floor>();
 		People = new CopyOnWriteArrayList<People>();
 		State = Mode.WAIT;
 		Direction=Mode.UP;
-		x=327;
+		this.x=x;
 		this.y=currentF.getAy()+5;
 		this.setCurrentF(currentF);
 	}

@@ -25,6 +25,7 @@ public class Simulation extends JPanel
 	//private ArrayList<People> Peoples;
 	private CopyOnWriteArrayList<People> Peoples;
 	private Ascenseur a;
+	private Ascenseur b;
 	//booleans for ascenseur
 	
 	
@@ -36,7 +37,9 @@ public class Simulation extends JPanel
 	{
 		Floors = Floor.genFloors();
 		Peoples = new CopyOnWriteArrayList<People>();
-		a = new Ascenseur(Floors.get(4));
+		a = new Ascenseur(Floors.get(4),270);
+		b = new Ascenseur(Floors.get(4),377);
+		
 		timer = new Timer(refreshRate, (e) -> {
             
             counter += refreshRate;
@@ -76,8 +79,10 @@ public class Simulation extends JPanel
 		//draw all floors
 		Floor.drawFloors(gg);
 		this.drawSpace(gg);
+		this.drawSpace2(gg);
 		//draw the elevator
 		a.drawElevator(gg);
+		b.drawElevator(gg);
 		//draw all the people
 		if(!Peoples.isEmpty())
 		{
@@ -85,6 +90,7 @@ public class Simulation extends JPanel
 		}
 
 		manouver(a);
+		manouver(b);
 		
 	}
 	public void manouver(Ascenseur a)
@@ -161,7 +167,7 @@ public class Simulation extends JPanel
 			
 			for(int i=0; i < size ;i++)
 			{
-				a.getPeople().get(i).setDestX(327-i*20);
+				a.getPeople().get(i).setDestX((a.getX())-i*20);
 			}
 
 			if(!a.getPeople().isEmpty())
@@ -246,7 +252,18 @@ public class Simulation extends JPanel
 		g3.setColor(new Color(0,66,112));
 		for(int i = 0 ; i<500;i+=100)
 		{
-			g3.fillRect(320, i, 100, 100);
+			g3.fillRect(263, i, 100, 100);
+		}
+	}
+	public void drawSpace2(Graphics g) 
+	{
+		
+		//Elevator space
+		Graphics2D g3 = (Graphics2D) g ;
+		g3.setColor(new Color(0,66,112));
+		for(int i = 0 ; i<500;i+=100)
+		{
+			g3.fillRect(370, i, 100, 100);
 		}
 	}
 	
