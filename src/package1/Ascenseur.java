@@ -28,7 +28,20 @@ public class Ascenseur
 	private Mode State;
 	private Mode Direction;
 	//vitesse de l'assenceur
-	private int ESpeed = 1;
+	private int ESpeed = 5;
+	
+	
+	//ascenseur booleans
+	public boolean standby = true;
+	public boolean boarding = false;
+	public boolean prepare = false;
+	public boolean launch = false;
+	//booleans for people
+	public boolean call = false;
+	public boolean finished = false;
+	
+	
+	
 	public Ascenseur(int y) 
 	{
 		Calls = new LinkedList<Floor>();

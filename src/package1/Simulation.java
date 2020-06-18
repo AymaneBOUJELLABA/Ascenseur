@@ -11,6 +11,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 
 import package1.Ascenseur.Mode;
@@ -19,59 +20,45 @@ import package1.People.PMode;
 
 public class Simulation extends JPanel
 {
-	private int Elspeed = 5;
-	private int pSpeed = 1;
-	private Graphics g;
-	private Floor sp = new Floor(); //where the elevator will go up and down
+	
 	private ArrayList<Floor> Floors;
 	//private ArrayList<People> Peoples;
 	private CopyOnWriteArrayList<People> Peoples;
 	private Ascenseur a;
-	//booleans for simulation
-	private boolean start = false;
-	private boolean stop = true;
-	private boolean exists = false;
 	//booleans for ascenseur
-	private boolean arrive = false;
-	private boolean arriveDest = false;
-	private boolean stopped = true;
-	private boolean empty = true;
-	private boolean goNext = true;
-	private boolean standby = true;
-	private boolean boarding = false;
-	private boolean prepare = false;
-	private boolean launch = false;
-	//booleans for people
-	private boolean call = false;
-	private boolean onboard = false;
-	private boolean PersonArrived = false;
-	private boolean finished = false;
 	
-	private int counter = 0;
-	private int time = 0;
-	public Simulation(int n)
+	
+	private Timer timer;
+    private boolean isRunning = true;
+    private int counter;
+    private int timeElapsedInSecs;
+	public Simulation(int refreshRate)
 	{
 		Floors = Floor.genFloors();
 		Peoples = new CopyOnWriteArrayList<People>();
 		a = new Ascenseur(Floors.get(4));
-		Thread animationThread = new Thread(new Runnable()
-        {
-            public void run()
+		timer = new Timer(refreshRate, (e) -> {
+            
+            counter += refreshRate;
+            
+            if (counter / 500 == 1)
             {
-                while (true)
+                counter = 0;
+                ++timeElapsedInSecs;
+                
+                if (timeElapsedInSecs % 5 == 0)
                 {
-                	repaint();
-                    try
-                    {
-                    	Thread.sleep(10);
-                    } catch (Exception ex)
-                    {
-                    	
-                    }
+                	People.genPerson(Peoples, Floors);
                 }
             }
+            
+            if (isRunning)
+            {
+                repaint();
+            }
         });
-        animationThread.start();
+        
+        timer.start();
 	}
 	@Override
 	protected void paintComponent(Graphics g)
@@ -92,30 +79,18 @@ public class Simulation extends JPanel
 		//draw the elevator
 		a.drawElevator(gg);
 		//draw all the people
-		counter++;
-		if(counter == 200)
-		{
-			counter = 0;
-			People.genPerson(Peoples, Floors);
-			start=true;
-		}
 		if(!Peoples.isEmpty())
 		{
 			People.drawPeople(Peoples, gg);
 		}
-		
-		for(Floor f : Floors)
-		{
-			System.out.println("f has : " + f.getPeoples().size() + " person");
-		}
-		System.out.println("A has : "+ a.getPeople().size() + " person");
+
 		manouver(a);
 		
 	}
 	public void manouver(Ascenseur a)
 	{
 		//si l'ascenseur est vide et aucune personne n'existe
-		if(standby)
+		if(a.standby)
 		{
 			//chercher ou se trouve les personnes
 			for(Floor f: Floors)
@@ -127,15 +102,15 @@ public class Simulation extends JPanel
 					//Move elevator to upper floor
 					a.setState(Mode.UP);
 					
-					call = true;
-					standby = false;
+					a.call = true;
+					a.standby = false;
 					
 					break;
 				}
 			}
 		}
 		//Move elevator to targeted passengers
-		if(call)
+		if(a.call)
 		{
 			if ( (a.getY()-5) % 100 == 0)
 			{
@@ -162,13 +137,13 @@ public class Simulation extends JPanel
                 	{
                 		p.setState(PMode.RIGHT);
                 	}
-                	call = false;
-                	boarding = true;	
+                	a.call = false;
+                	a.boarding = true;	
                 }
 			}
 		}
 		
-		if(a.getState() == Mode.WAIT && boarding)
+		if(a.getState() == Mode.WAIT && a.boarding)
 		{
 			//unload the passengers
 			
@@ -191,30 +166,30 @@ public class Simulation extends JPanel
 
 			if(!a.getPeople().isEmpty())
 			{
-				boarding = false;
-				prepare = true;
+				a.boarding = false;
+				a.prepare = true;
 			}
 			else
 			{
-				boarding = false;
-				finished = true;
+				a.boarding = false;
+				a.finished = true;
 			}
 		}
 		
 		
-		if(finished)
+		if(a.finished)
 		{
 
 			a.setState(Mode.WAIT);
 			
 			if(a.getState() == Mode.WAIT)
 			{
-				finished = false;
-				standby = true;
+				a.finished = false;
+				a.standby = true;
 			}
 		}
 		
-		if(prepare)
+		if(a.prepare)
 		{
 			CopyOnWriteArrayList<People> temp = a.getPeople();
 			System.out.println(temp);
@@ -222,10 +197,9 @@ public class Simulation extends JPanel
 			{
 				if(temp.get(temp.size()-1).getAx() == temp.get(temp.size()-1).getDestX())
 				{
-					System.out.println("State changed");
 					a.setState(Mode.WAIT);
-					prepare = false;
-					launch = true;
+					a.prepare = false;
+					a.launch = true;
 				}
 				else
 				{
@@ -248,138 +222,21 @@ public class Simulation extends JPanel
 			}
 			else
 			{
-				boarding = false;
-				finished = true;
+				a.boarding = false;
+				a.finished = true;
 			}
 		}
 		
-		if(launch)
+		if(a.launch)
 		{
-			System.out.println("a.getDirect = " +a.getDirection());
 			a.setState( a.getDirection() == Mode.UP ? Mode.UP : Mode.DOWN);
 			
-			launch = false;
+			a.launch = false;
 			
-			call = true;
-		}
-	}
-	public void manouver(Ascenseur a, People nextP)
-	{
-		if(!stopped && !arrive && a.getPeople().isEmpty())
-		{
-			MoveAsc(nextP.getCurrentF(), a);
-		}
-		if(!onboard && a.getCurrentF().equals(nextP.getCurrentF()))
-		{
-			arrive=true;
-			stopped = true;
-		}
-		if(arrive && stopped && !onboard)
-		{
-			MovePersonToAsc(nextP,a);
-			empty = false;
-			arrive = false;
-		}
-		if(onboard && !stopped && !arriveDest && !a.getPeople().isEmpty())
-		{
-			Floor f = a.getPeople().get(0).getDestinationF();
-			if(f!=null)
-				MoveAsc(f, a);
-		}
-		if(a.getCurrentF().equals(nextP.getDestinationF()))
-		{
-			arriveDest = true;
-			stopped = true;
-		}
-		if(arriveDest && stopped)
-		{
-			onboard = false;
-			exitAsceneur(nextP, a);
-		}
-	}
-	public void MoveAsc(Floor F,Ascenseur a)
-	{
-		System.out.println(a.getCurrentF().getNumber()+" -> "+F.getNumber());
-		CopyOnWriteArrayList<People> ps = a.getPeople();
-		boolean stop=false;
-		if(!stop)
-		{
-			//si l'ascenseur est arrivé a l'etage F
-			if( F.getAy()+5 == a.getY())
-			{
-				stop = true;
-				a.setCurrentF(F);
-			}
-			else
-			{
-				//si l'etage est en bas
-				if(F.getAy()+5 > a.getY())
-				{
-					a.setY(a.getY()+Elspeed);
-					if(!ps.isEmpty())
-					{
-						for(People p : ps)
-							p.setAy(p.getAy()+Elspeed);
-					}
-							
-				}
-				//si l'etage est en haut
-				if(F.getAy()+5 < a.getY())
-				{
-					a.setY(a.getY()-Elspeed);
-					if(!ps.isEmpty())
-					{
-						for(People p : ps)
-							p.setAy(p.getAy()-Elspeed);
-					}
-				}
-			}
-		}
-	}
-	public void MovePersonToAsc(People p,Ascenseur a)
-	{
-		boolean isIn = false;
-		if(!isIn)
-		{
-			if(p.getAx()==a.getX())
-			{
-				
-				onboard = true;
-				isIn=true;
-				a.addPeople(p);
-				stopped = false;
-				System.out.println("person added");
-			}
-			if(!isIn)
-			{
-				p.setAx(p.getAx()+pSpeed);
-			}
+			a.call = true;
 		}
 	}
 	
-	public void exitAsceneur(People p,Ascenseur a)
-	{
-		boolean end = false;
-		p.setCurrentF(a.getCurrentF());
-		
-		if(!end)
-			p.setAx(p.getAx()+pSpeed);
-		if(p.getAx()==500)
-			end = true;
-		
-		if(end)
-		{
-			a.getPeople().remove(p);
-			Peoples.remove(p);
-			call = false;
-			goNext = true;
-			finished = true;
-		}
-	}
-	public int getFloorindex(int i)
-	{
-		return Floors.size()-i-1;
-	}
 	//to draw the spaces between floors
 	public void drawSpace(Graphics g) 
 	{
@@ -395,9 +252,9 @@ public class Simulation extends JPanel
 	
 	public static void main(String[] args)
 	{
-        JFrame frame = new JFrame("Train Demo");
+        JFrame frame = new JFrame("Asceneur Demo");
         
-        Simulation s1 = new Simulation(5);
+        Simulation s1 = new Simulation(10);
 		s1.setBounds(0, 0, 750, 500);
 		s1.setPreferredSize(new Dimension(750, 500));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
